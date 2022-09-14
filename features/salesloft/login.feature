@@ -17,13 +17,3 @@ Feature: Login Feature
 
 
 
-#    @melody @kafka @keyscore
-#    Scenario: A user login in an places a call or whatever
-#      Given I am a registered user
-#      When I login to Salesloft in "us3"
-#      And I navigate to Cadence
-#      And I place a phone call to test number
-#      Then it should connect to a keyscore router
-#      And some events should show up in Kafka
-
-
