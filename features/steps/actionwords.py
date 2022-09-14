@@ -1,89 +1,55 @@
 # encoding: UTF-8
-from behave import *
-from src.coffee_machine import CoffeeMachine
+
+from playwright.sync_api import Page, expect
+import time
+import names
+
 
 class Actionwords:
-    def __init__(self):
-        self.sut = CoffeeMachine()
-        self.handled = []
+    def __init__(self, page):
+        self.page = page
+        self.region = None
+        self.password = None
+        self.user = None
 
-    def i_start_the_coffee_machine_using_language_lang(self, lang = "en"):
-        self.sut.start(lang)
+    def set_user_details(self, username, password):
+        self.user = username
+        self.password = password
 
-    def i_shutdown_the_coffee_machine(self):
-        self.sut.stop()
+    def i_login_to_salesloft(self):
+        page = self.page
 
-    def message_message_should_be_displayed(self, message):
-        assert (self.sut.message == message) is True
+        page.goto('https://app.salesloft.com/app/dashboard')
 
-    def coffee_should_be_served(self):
-        assert self.sut.coffee_served is True
+        next_button = page.locator("text=Next")
+        expect(next_button).to_be_visible()
 
-    def coffee_should_not_be_served(self):
-        assert self.sut.coffee_served is False
+        page.screenshot(path=f'salesloft.png')
+        page.locator("[placeholder=\"Email Address\"]").click()
+        page.locator("[placeholder=\"Email Address\"]").fill(self.user)
+        page.locator("text=Next").click()
+        page.locator("[placeholder=\"Password\"]").fill(self.password)
+        page.locator("text=Sign In").click()
 
-    def i_take_a_coffee(self):
-        self.sut.take_coffee()
+    def create_a_new_person(self):
+        page = self.page
 
-    def i_empty_the_coffee_grounds(self):
-        self.sut.empty_grounds()
+        name = names.get_first_name()
+        surname = names.get_last_name()
 
-    def i_fill_the_beans_tank(self):
-        self.sut.fill_beans()
+        page.locator("[aria-label=\"Navigate to People\"] path").click()
+        page.locator("button:has-text(\"Create People\")").click()
+        page.locator("text=Create Person").click()
 
-    def i_fill_the_water_tank(self):
-        self.sut.fill_tank()
+        page.locator("[aria-label=\"Person email address\"]").fill(f"{name}.{surname}@salesloft.com")
+        page.locator("[aria-label=\"first name\"]").click()
+        page.locator("[aria-label=\"first name\"]").fill(name)
+        # Press Tab
+        page.locator("[aria-label=\"first name\"]").press("Tab")
+        # Fill [aria-label="last name"]
+        page.locator("[aria-label=\"last name\"]").fill(surname)
+        # Click button:has-text("Create Person")
+        page.locator("button:has-text(\"Create Person\")").click()
 
-    def i_take_coffee_number_coffees(self, coffee_number = 10):
-        coffee_number = int(coffee_number)
-
-        while (coffee_number > 0):
-            self.i_take_a_coffee()
-            coffee_number = coffee_number - 1
-
-            if 'water' in self.handled:
-                self.i_fill_the_water_tank()
-
-            if 'beans' in self.handled:
-                self.i_fill_the_beans_tank()
-
-            if 'grounds' in self.handled:
-                self.i_empty_the_coffee_grounds()
-
-    def the_coffee_machine_is_started(self):
-        self.i_start_the_coffee_machine_using_language_lang()
-
-    def i_handle_water_tank(self):
-        self.handled.append('water')
-
-    def i_handle_beans(self):
-        self.handled.append('beans')
-
-    def i_handle_coffee_grounds(self):
-        self.handled.append('grounds')
-
-    def i_handle_everything_except_the_water_tank(self):
-        self.i_handle_coffee_grounds()
-        self.i_handle_beans()
-
-    def i_handle_everything_except_the_beans(self):
-        self.i_handle_water_tank()
-        self.i_handle_coffee_grounds()
-
-    def i_handle_everything_except_the_grounds(self):
-        self.i_handle_water_tank()
-        self.i_handle_beans()
-
-    def displayed_message_is(self, free_text = ""):
-        self.message_message_should_be_displayed(message = free_text)
-
-    def i_switch_to_settings_mode(self):
-        self.sut.show_settings()
-
-    def settings_should_be(self, datatable = "||"):
-        # Apparently, no way to get the raw table and assert_equals does not work that much ...
-        expected = [datatable.rows[0].headings]
-        for row in datatable.rows:
-            expected.append([c for c in row])
-
-        assert (expected == [[str(k), str(v)] for k, v in self.sut.get_settings().items()]) is True
+        time.sleep(3)
+        print('see me')
