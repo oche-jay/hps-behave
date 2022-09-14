@@ -20,7 +20,7 @@ def my_context(page: Page):
 @given("I am a registered user")
 def step_impl(my_context):
     region = "us4"
-    user = f"sre+synthetics-{region}@salesloft.com"
+    user = ''
     password = ''
 
     my_context.actionwords.set_user_details(user, password)
